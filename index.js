@@ -5,6 +5,11 @@
 var express = require('express');
 var app = express();
 
+app.use(function(req, res, next){
+  console.log(req.method + ' ' + req.path + ' - ' + req.ip);
+  next();
+});
+
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
@@ -18,10 +23,23 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/api', function(req, res) {
+  const date = new Date();
+  res.json({unix: date.getTime(), utc: date.toUTCString()});
+});
 
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+app.get("/api/:date?", function(req, res) {
+    let date = new Date(req.params.date);
+    if(!isNaN(date)) {
+      res.json({unix: date.getTime(), utc: date.toUTCString()});
+    } else {
+      date = new Date(Number(req.params.date));
+      if(!isNaN(date)) {
+        res.json({unix: date.getTime(), utc: date.toUTCString()});
+      } else {
+        res.json({'error': "Invalid Date"});
+      }
+    }
 });
 
 
